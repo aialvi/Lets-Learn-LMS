@@ -1,7 +1,8 @@
 import type { NextPage } from "next";
+import Landing from "../components/Landing";
 
 const Home: NextPage = () => {
-  return <h1 className="text-3xl font-bold underline">Hello world!</h1>;
+  return <Landing />;
 };
 
 export default Home;
