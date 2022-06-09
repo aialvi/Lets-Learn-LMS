@@ -1,8 +1,7 @@
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @next/next/no-img-element */
 import { ChevronRightIcon, StarIcon } from "@heroicons/react/solid";
-// import Image from "next/image";
 
-// show this year by javascript
 const year = new Date().getFullYear();
 
 const stats = [
