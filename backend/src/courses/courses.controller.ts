@@ -7,9 +7,11 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './create-course.dto';
 
+@ApiTags('courses')
 @Controller('courses')
 export class CoursesController {
   constructor(private coursesService: CoursesService) {}
