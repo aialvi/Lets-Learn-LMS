@@ -1,43 +1,75 @@
-import { Injectable, HttpException } from '@nestjs/common';
-import { COURSES } from './courses.mock';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class CoursesService {
-  courses = COURSES;
+  constructor(private prisma: PrismaService) {}
 
-  getCourses(): Promise<any> {
-    return new Promise((resolve) => {
-      resolve(this.courses);
+  async create(data: any, authorId: string) {
+    return this.prisma.course.create({
+      data: {
+        ...data,
+        authorId,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
     });
   }
 
-  getCourse(courseId): Promise<any> {
-    const id = Number(courseId);
-    return new Promise((resolve) => {
-      const course = this.courses.find((course) => course.id === id);
-      if (!course) {
-        throw new HttpException('Course does not exist', 404);
-      }
-      resolve(course);
+  async findAll() {
+    return this.prisma.course.findMany({
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+        _count: {
+          select: { lessons: true, enrollments: true },
+        },
+      },
     });
   }
 
-  addCourse(course): Promise<any> {
-    return new Promise((resolve) => {
-      this.courses.push(course);
-      resolve(this.courses);
+  async findOne(id: string) {
+    return this.prisma.course.findUnique({
+      where: { id },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+        lessons: {
+          orderBy: {
+            order: 'asc',
+          },
+        },
+        _count: {
+          select: { enrollments: true },
+        },
+      },
     });
   }
 
-  deleteCourse(courseId): Promise<any> {
-    const id = Number(courseId);
-    return new Promise((resolve) => {
-      const index = this.courses.findIndex((course) => course.id === id);
-      if (index === -1) {
-        throw new HttpException('Course does not exist', 404);
-      }
-      this.courses.splice(index, 1);
-      resolve(this.courses);
+  async update(id: string, data: any) {
+    return this.prisma.course.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async remove(id: string) {
+    return this.prisma.course.delete({
+      where: { id },
     });
   }
 }

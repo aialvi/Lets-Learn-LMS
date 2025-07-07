@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id             String          @id @default(uuid())
+  username       String          @unique
+  email          String          @unique
+  password       String
+  firstName      String?
+  lastName       String?
+  role           String          @default("student")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  enrollments    Enrollment[]
+  courses        Course[]        @relation("AuthoredCourses")
+  videoProgress  VideoProgress[]
+}
+
+model Course {
+  id             String          @id @default(uuid())
+  title          String
+  description    String?
+  price          Float
+  authorId       String
+  author         User            @relation("AuthoredCourses", fields: [authorId], references: [id])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  lessons        Lesson[]
+  enrollments    Enrollment[]
+  videoProgress  VideoProgress[]
+}
+
+model Lesson {
+  id            String          @id @default(uuid())
+  title         String
+  content       String?
+  videoUrl      String?
+  order         Int
+  courseId      String
+  course        Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  videoProgress VideoProgress[]
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  userId    String
+  courseId  String
+  status    String   @default("active")
+  progress  Float    @default(0)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+}
+
+model VideoProgress {
+  id         String   @id @default(uuid())
+  userId     String
+  lessonId   String
+  courseId   String
+  completed  Boolean  @default(false)
+  watchTime  Int      @default(0) // in seconds
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+}

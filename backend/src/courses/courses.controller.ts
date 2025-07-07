@@ -1,42 +1,49 @@
 import {
   Controller,
   Get,
-  Param,
   Post,
   Body,
+  Patch,
+  Param,
   Delete,
-  Query,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './create-course.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('courses')
 @Controller('courses')
 export class CoursesController {
-  constructor(private coursesService: CoursesService) {}
+  constructor(private readonly coursesService: CoursesService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  create(@Body() createCourseDto: any, @Request() req) {
+    return this.coursesService.create(createCourseDto, req.user.id);
+  }
 
   @Get()
-  async getCourses() {
-    const courses = await this.coursesService.getCourses();
-    return courses;
+  findAll() {
+    return this.coursesService.findAll();
   }
 
-  @Get(':courseId')
-  async getCourse(@Param('courseId') courseId) {
-    const course = await this.coursesService.getCourse(courseId);
-    return course;
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.coursesService.findOne(id);
   }
 
-  @Post()
-  async addCourse(@Body() createCourseDto: CreateCourseDto) {
-    const course = await this.coursesService.addCourse(createCourseDto);
-    return course;
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateCourseDto: any) {
+    return this.coursesService.update(id, updateCourseDto);
   }
 
-  @Delete()
-  async deleteCourse(@Query() query) {
-    const courses = await this.coursesService.deleteCourse(query.courseId);
-    return courses;
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.coursesService.remove(id);
   }
 }
